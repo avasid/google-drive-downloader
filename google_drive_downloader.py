@@ -72,6 +72,7 @@ def get_download_url(file_id, param):
 def get_headers(file_id, token):
     token = check_token(token)
     param = {"Authorization": "Bearer " + token['access_token'],
+             "supportsAllDrives": "true",
              "alt": "media"}
     req_url = get_download_url(file_id, param)
     req_response = requests.request("GET", req_url, headers=param, stream=True)
@@ -88,6 +89,9 @@ def get_headers(file_id, token):
 def get_children(folder_id, token, page_token=None):
     param = {"Authorization": "Bearer " + token['access_token'],
              "q": "'{}' in parents".format(folder_id),
+             "corpora": "allDrives",
+             "includeItemsFromAllDrives": "true",
+             "supportsAllDrives": "true",
              "orderBy": "folder,name",
              "pageSize": "1000",
              "fields": "nextPageToken, files(id,name,mimeType,size)"}
@@ -195,6 +199,8 @@ def get_mimetype(unique_id, token):
     token = check_token(token)
     try:
         param = {"Authorization": "Bearer " + token['access_token'],
+                 "includeItemsFromAllDrives": "true",
+                 "supportsAllDrives": "true",
                  "fields": "id,name,mimeType"}
         param_str = ""
         for k, v in param.items():
@@ -220,8 +226,10 @@ def get_mimetype(unique_id, token):
         sys.exit()
 
 
-def by_id(unique_id, token, dest="./"):
+def by_id(unique_id, token, dest):
     name, mime = get_mimetype(unique_id, token)
+    if dest == "":
+        dest = "."
     if mime != "application/vnd.google-apps.folder":
         param = get_headers(unique_id, token)
         download_url = get_download_url(unique_id, param)
@@ -236,7 +244,7 @@ def by_id(unique_id, token, dest="./"):
 def by_name(folder_id, token, dest):
     items_dict = list_children(folder_id, token)
     if items_dict == {}:
-        print("Maybe it's a folder, retry with [A]ll option")
+        print("Maybe it's a file, retry with [A]ll option")
         return
     while(True):
         search_string = str(input("Part of filename or whole file ID: "))
@@ -274,17 +282,17 @@ auth_code = get_auth_code()
 token = code_to_token(auth_code=auth_code)
 
 while(True):
-    folder_id = str(input("Folder ID: "))
-    if folder_id != '':
+    item_id = str(input("Item ID: "))
+    if item_id != '':
         break
     print("Empty ID")
 destination = str(input("Location for download: "))
 while True:
     choice = str(input("[A]ll | [P]art: "))
     if choice == 'A':
-        by_id(folder_id, token, destination)
+        by_id(item_id, token, destination)
     elif choice == 'P':
-        by_name(folder_id, token, destination)
+        by_name(item_id, token, destination)
     else:
         print("No known choice")
         continue
