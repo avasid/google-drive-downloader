@@ -1,4 +1,5 @@
 import getpass
+import json
 import os
 import time
 
@@ -16,7 +17,11 @@ def get_auth_code():
 
 def get_token(token=None):
     if token is None:
-        token = {}
+        if os.path.isfile("./token.json"):
+            with open("./token.json") as fh:
+                token = json.load(fh)
+        else:
+            token = {}
     if 'refresh_token' not in token.keys():
         auth_code = get_auth_code()
         addon_dict = {"grant_type": "authorization_code",
@@ -38,6 +43,8 @@ def get_token(token=None):
             # Buffer time for processing
             token_dict['expires_at'] = time.time() + token_dict['expires_in'] - 10
             token.update(token_dict)
+            with open("./token.json", "w") as fh:
+                json.dump(token, fh)
             return token
         else:
             raise ValueError("Token failed to convert to dict: " + str(token_dict) + ", Type: " + str(type(token_dict)))
@@ -147,7 +154,9 @@ def list_children(folder_id, token):
             return {}
         else:
             for item in items:
-                size = downloadipy.Downloader.humanize_bytes(int(item.get('size', 0)))
+                size = "IsDir" if item[
+                                      'mimeType'] == "application/vnd.google-apps.folder" else downloadipy.Downloader.humanize_bytes(
+                    int(item.get('size', 0)))
                 total_items[item['name']] = (size, item['id'])
                 print(u'{0}    [Size: {1}] ({2})'.format(item['name'], size, item['id']))
             page_token = results.get('nextPageToken')
@@ -237,9 +246,8 @@ def by_name(folder_id, token, dest):
             break
 
 
-with open("creds.json", 'r') as fh:
-    creds_json = fh.read()
-creds_dict = eval(creds_json)
+with open("creds.json") as fh:
+    creds_dict = json.load(fh)
 if type(creds_dict) == dict:
     CLIENT_ID = creds_dict['installed']['client_id']
     CLIENT_SECRET = creds_dict['installed']['client_secret']
