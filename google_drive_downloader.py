@@ -176,7 +176,7 @@ def schema_handler(schema, cwd):
             elif type(elem) == tuple:
                 param = get_headers(elem[0], token)
                 download_url = get_download_url(elem[0], param)
-                downloadipy.Downloader(download_url, cwd + elem[1], headers=param).download()
+                downloadipy.Downloader(download_url, cwd + elem[1], headers=param, skip_existing=True).download()
             else:
                 print("What is it?", elem)
     else:
@@ -216,7 +216,7 @@ def by_id(unique_id, token, dest):
     if mime != "application/vnd.google-apps.folder":
         param = get_headers(unique_id, token)
         download_url = get_download_url(unique_id, param)
-        downloadipy.Downloader(download_url, os.path.join(dest, name), headers=param).download()
+        downloadipy.Downloader(download_url, os.path.join(dest, name), headers=param, skip_existing=True).download()
     else:
         os.makedirs(os.path.join(dest, name), exist_ok=True)
         schema = get_children_schema(unique_id, token)
