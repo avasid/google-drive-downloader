@@ -1,6 +1,7 @@
 import getpass
 import json
 import os
+import sys
 import time
 
 import downloadipy
@@ -16,9 +17,10 @@ def get_auth_code():
 
 
 def get_token(token=None):
+    token_path = os.path.join(sys.path[0], "token.json")
     if token is None:
-        if os.path.isfile("./token.json"):
-            with open("./token.json") as fh:
+        if os.path.isfile(token_path):
+            with open(token_path) as fh:
                 token = json.load(fh)
         else:
             token = {}
@@ -43,7 +45,7 @@ def get_token(token=None):
             # Buffer time for processing
             token_dict['expires_at'] = time.time() + token_dict['expires_in'] - 10
             token.update(token_dict)
-            with open("./token.json", "w") as fh:
+            with open(token_path, "w") as fh:
                 json.dump(token, fh)
             return token
         else:
@@ -246,7 +248,7 @@ def by_name(folder_id, token, dest):
             break
 
 
-with open("creds.json") as fh:
+with open(os.path.join(sys.path[0], "creds.json")) as fh:
     creds_dict = json.load(fh)
 if type(creds_dict) == dict:
     CLIENT_ID = creds_dict['installed']['client_id']
