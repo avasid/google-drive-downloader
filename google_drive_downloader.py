@@ -11,7 +11,7 @@ import requests
 def get_auth_code():
     auth_url = "{0}?client_id={1}&redirect_uri={2}&response_type=code&scope={3}".format(AUTH_URI, CLIENT_ID,
                                                                                         REDIRECT_URI, ' '.join(SCOPES))
-    print("Paste the link from this URL here:\n", auth_url)
+    print("Paste the code from this URL here:\n", requests.urllib3.util.parse_url(auth_url).url)
     auth_code = str(getpass.getpass())
     return auth_code
 
@@ -68,7 +68,7 @@ def get_download_url(file_id, param):
         param_str += k + "=" + v + "&"
     param_str = "?" + param_str[:-1]
     req_url = "https://www.googleapis.com/drive/v3/files/" + file_id + param_str
-    return req_url
+    return requests.urllib3.util.parse_url(req_url).url
 
 
 def get_headers(file_id, token):
@@ -103,7 +103,7 @@ def get_children(folder_id, token, page_token=None):
     param_str = "?" + param_str[:-1]
     if page_token:
         param['pageToken'] = page_token
-    req_url = "https://www.googleapis.com/drive/v3/files" + param_str
+    req_url = requests.urllib3.util.parse_url("https://www.googleapis.com/drive/v3/files" + param_str).url
     req_response = requests.request("GET", req_url, headers=param)
     if not req_response.ok:
         print(req_response.text)
@@ -193,7 +193,7 @@ def get_mimetype(unique_id, token):
     for k, v in param.items():
         param_str += k + "=" + v + "&"
     param_str = "?" + param_str[:-1]
-    req_url = "https://www.googleapis.com/drive/v3/files/" + unique_id + param_str
+    req_url = requests.urllib3.util.parse_url("https://www.googleapis.com/drive/v3/files/" + unique_id + param_str).url
     req_response = requests.request("GET", req_url, headers=param)
     if not req_response.ok:
         print(req_response.text)
