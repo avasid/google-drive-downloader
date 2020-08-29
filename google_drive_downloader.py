@@ -248,44 +248,49 @@ def by_name(folder_id, token, dest):
             break
 
 
-with open(os.path.join(sys.path[0], "creds.json")) as fh:
-    creds_dict = json.load(fh)
-if type(creds_dict) == dict:
-    CLIENT_ID = creds_dict['installed']['client_id']
-    CLIENT_SECRET = creds_dict['installed']['client_secret']
-    AUTH_URI = creds_dict['installed']['auth_uri']
-    TOKEN_URI = creds_dict['installed']['token_uri']
-    REDIRECT_URI = creds_dict['installed']['redirect_uris'][0]
-    SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]  # list
-else:
-    raise ValueError("Error in creds.json")
-token = get_token()
+try:
+    with open(os.path.join(sys.path[0], "creds.json")) as fh:
+        creds_dict = json.load(fh)
+    if type(creds_dict) == dict:
+        CLIENT_ID = creds_dict['installed']['client_id']
+        CLIENT_SECRET = creds_dict['installed']['client_secret']
+        AUTH_URI = creds_dict['installed']['auth_uri']
+        TOKEN_URI = creds_dict['installed']['token_uri']
+        REDIRECT_URI = creds_dict['installed']['redirect_uris'][0]
+        SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]  # list
+    else:
+        raise ValueError("Error in creds.json")
+    token = get_token()
 
-again = True
-item_id = None
-destination = os.getcwd()
-while again:
-    while True:
-        item_id_temp = str(input("Item ID [Default: {}]: ".format(item_id)))
-        if item_id_temp != '':
-            item_id = item_id_temp
+    again = True
+    item_id = None
+    destination = os.getcwd()
+    while again:
+        while True:
+            item_id_temp = str(input("Item ID [Default: {}]: ".format(item_id)))
+            if item_id_temp != '':
+                item_id = item_id_temp
+                break
+            elif item_id != '':
+                break
+            print("Empty ID")
+        destination_temp = str(input("Location for download [Default: {}]: ".format(destination)))
+        if destination_temp != '':
+            destination = destination_temp
+        while True:
+            choice = str(input("[A]ll | [S]ingle: "))
+            if choice == 'A':
+                by_id(item_id, token, destination)
+            elif choice == 'P':
+                by_name(item_id, token, destination)
+            else:
+                print("No known choice")
+                continue
             break
-        elif item_id != '':
-            break
-        print("Empty ID")
-    destination_temp = str(input("Location for download [Default: {}]: ".format(destination)))
-    if destination_temp != '':
-        destination = destination_temp
-    while True:
-        choice = str(input("[A]ll | [P]art: "))
-        if choice == 'A':
-            by_id(item_id, token, destination)
-        elif choice == 'P':
-            by_name(item_id, token, destination)
-        else:
-            print("No known choice")
-            continue
-        break
-    again_resp = str(input("Download another item? [Y|N]: "))
-    if again_resp == "N":
-        again = False
+        again_resp = str(input("Download another item? [Y|N]: "))
+        if again_resp == "N":
+            again = False
+except KeyboardInterrupt:
+    print("\nProcess interrupted by user")
+    print("Exiting")
+    sys.exit(0)
