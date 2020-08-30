@@ -281,7 +281,7 @@ try:
             choice = str(input("[A]ll | [S]ingle: "))
             if choice == 'A':
                 by_id(item_id, token, destination)
-            elif choice == 'P':
+            elif choice == 'S':
                 by_name(item_id, token, destination)
             else:
                 print("No known choice")
